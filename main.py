@@ -25,6 +25,10 @@ import config as cfg
 #   size
 
 
+# Make full download of each dataset optional (i.e. disable to boost performance)
+from os import environ
+ENABLE_DOWNLOAD = bool(environ.get('ENABLE_DOWNLOAD', True))
+
 
 def dump(datasets):
     tempfile = cfg.output_file + '.tmp'
@@ -69,7 +73,6 @@ packages = r.json()
 
 datasets = resume()
 
-
 for i, package in enumerate(packages['result']):
 
     dataset_name = package #packages['result'][i]
@@ -106,20 +109,16 @@ for i, package in enumerate(packages['result']):
         else:
             print "Status code " + ds.status_code
 
-    for dl in dataset.downloads:
-        if not(dl.status == 'Downloaded' or dl.status == "Analyzed"):
-            print "Downloading..."
-            dl.download()
-        if not(dl.status == 'Analyzed'):
-            print "Analyzing..."
-            dl.analyze()
+    if ENABLE_DOWNLOAD:
+        for dl in dataset.downloads:
+            if not(dl.status == 'Downloaded' or dl.status == "Analyzed"):
+                print "Downloading..."
+                dl.download()
+            if not(dl.status == 'Analyzed'):
+                print "Analyzing..."
+                dl.analyze()
 
-        if(not(cfg.keep_data)):
-            dl.delete_file()
+            if(not(cfg.keep_data)):
+                dl.delete_file()
 
     dump(datasets)
-
-
-
-
-
